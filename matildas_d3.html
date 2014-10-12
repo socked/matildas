@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Character Gender in Children's Picture Books</title>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js">
+		</script>
+		<script type="text/javascript" src="data.json"></script>
+		<style type="text/css">
+			/*svg {
+			background-color: rgba(166, 178, 205, 0.100);
+		}*/
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
+			}
+			.axis text {
+				font-family: sans-serif;
+				font-size: 17px;
+			}
+		</style>
+	</head>
+	<body>
+		<p style = 'display: inline'>
+			<button for = "all"
+					style = "width:375px; height:50px; font-size:26px; color: honeydew; background-color: lightslategray"
+					id = "all">
+					[All Books]
+			</button>
+		</p>
+		<p style = 'display: inline'>
+			<button for="female"
+					id = "female"
+					style = "width:375px; height:50px; font-size:26px; color: honeydew; background-color: lightslategray">
+					[Female Authors]
+			</button>
+		</p>
+		<p style = 'display: inline'>
+			<button for = "male"
+					style = "width:375px; height:50px; font-size:26px; color: honeydew; background-color: lightslategray"
+					id = "male">
+					[Male Authors]
+			</button>
+		</p>
+		<script type="text/javascript">
+			
+		console.log(bookData);
+			var w = 1300;
+			var h = 1100;
+			var padding = 80;
+          	var dataset = bookData;
+
+			//Create scale functions
+			var xScale = d3.scale.linear()
+								 .domain([-.3, d3.max(dataset, function(d) { return d[2]; })])
+								 .range([padding, w - padding * 2]);
+
+			var yScale = d3.scale.linear()
+								 .domain([-.3, d3.max(dataset, function(d) { return d[3]; })])
+								 .range([h - padding, padding]);
+
+			var rScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+								 .range([2, 5]);
+
+			//Define X axis
+			var xAxis = d3.svg.axis()
+							  .scale(xScale)
+							  .orient("bottom")
+							  .ticks(5);
+
+			//Define Y axis
+			var yAxis = d3.svg.axis()
+							  .scale(yScale)
+							  .orient("left")
+							  .ticks(5);
+
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+			//Create circles
+			svg.selectAll("circle")
+			    .data(dataset)
+			    .enter()
+			    .append("circle")
+			    .attr("cx", function(d) {
+			   		return xScale(d[2]);
+			    })
+			    .attr("cy", function(d) {
+			   		return yScale(d[3]);
+			    })
+			    .attr("r", 5)
+			    .attr("fill", function(d){ 
+			    	if(d[2] > d[3]){
+			    		return "orange";
+			    	} else if (d[2] == d[3]){
+			    		return "turquoise";
+			    	} else {
+			    		return "navy";
+			    	} 
+				})
+				.attr("opacity", 0.6)
+			    .on("mouseover", function(d){
+			   		svg.append("text")
+			   		.text(d[1])
+			   		.attr("id", "myText")
+			   		.attr("x", xScale(d[2]))
+			   		.attr("y", yScale(d[3]))
+			   		.attr("font-family", "sans-serif")
+			   		.attr("font-size", "25px")
+			   		.attr("fill", "black");
+			   		d3.select(this)
+
+			    })
+			    .on("mouseout", function(){
+			    	d3.select("#myText").remove()
+			    });
+
+			    // Text with percentage breakdowns
+			    svg.append("text")
+			    .attr('id', 'alltext1')
+       			.attr("x", (w - 690))             
+       			.attr("y", 600)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'orange')
+        		.attr('font-family', 'sans-serif')
+        		.attr('font-weight', 'bold')
+      			.text("Female Characters: 38%");
+			    svg.append("text")
+			    .attr('id', 'alltext2')
+       			.attr("x", (w  - 690))             
+       			.attr("y", 530)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+         		.attr('font-weight', 'bold')
+      			.style('fill', 'darkblue')
+        		.attr('font-family', 'sans-serif')
+      			.text("Male Characters: 57%");
+      			svg.append("text")
+      			.attr('id', 'alltext3')
+       			.attr("x", (w  - 690))             
+        		.attr('font-weight', 'bold')
+      			.attr("y", 565)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'turquoise')
+        		.attr('font-family', 'sans-serif')
+      			.text("Tie: 5%");
+
+			//Create X axis
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (h - padding) + ")")
+			    .call(xAxis)
+			  .append('text')
+				.attr('x', w -480)
+				.attr('y', 59)
+				.attr('font-family', 'sans-serif')
+				.style('font-size', "20px")
+				.style('text-anchor', 'end')
+				.text('female term frequency (normalized/100 words)');
+			
+			//Create Y axis
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(" + padding + ",0)")
+				.call(yAxis)
+			  .append('text')
+				.attr('x', -395)
+				.attr('y', -47)
+      			.attr("transform", "rotate(-90)")
+				.attr('font-family', 'sans-serif')
+				.style('text-anchor', 'end')
+				.style('font-size', '20px')
+				.text('male term frequency (normalized/100 words)');
+
+			//Chart title
+			svg.append("text")
+       			.attr("x", (w / 2))             
+       			.attr("y", 170)
+       			.attr('font-weight', 'bold')
+       			.attr("text-anchor", "middle")  
+        		.style("font-size", "36px") 
+        		.attr('fill', 'dimgray')
+        		.attr('font-family', 'sans-serif')
+      			.text("Children's picture books: Primary character gender");
+
+			//Chart sub-title
+			svg.append("text")
+       			.attr("x", (w / 2))             
+       			.attr("y", 200)
+       			//.attr('font-weight', 'bold')
+       			.attr("text-anchor", "middle")  
+        		.style("font-size", "20px") 
+        		.attr('font-family', 'sans-serif')
+        		.attr('fill', 'dimgray')
+      			.text("[Hover over a datapoint for the book title]");
+
+      		//Buttons instructions
+			svg.append('text')
+				.attr('x', 300)
+				.attr('y', 40)
+				.style('font-size', '24px')
+				.attr('font-family', 'sans-serif')
+				.attr('fill', 'lightslategray')
+				.text('[Toggle the buttons to view results by author gender]') 
+      		
+      		d3.select("#female")
+      		.on('click', function(){
+				svg.selectAll('circle').remove();
+      			d3.select("#maletext1").remove();
+				d3.select('#maletext2').remove();
+				d3.select('#maletext3').remove();
+      			d3.select("#alltext1").remove();
+				d3.select('#alltext2').remove();
+				d3.select('#alltext3').remove();
+				f_dataset = female_authors;
+				svg.selectAll('circle')
+      			.data(f_dataset)
+        		.enter()
+			    .append("circle")
+ 			    .attr("cx", function(d) {
+			   		return xScale(d[2]);
+		    	})
+			    .attr("cy", function(d) {
+			   		return yScale(d[3]);
+			    })
+			    .attr("r", 5)
+			    .attr("fill", function(d){ 
+			    	if(d[2] > d[3]){
+			    		return "orange";
+			    	} else if (d[2] == d[3]){
+			    		return "turquoise";
+			    	} else {
+			    		return "navy";
+			    	} 
+				})
+				.attr("opacity", 0.6)
+			    .on("mouseover", function(d){
+			   		svg.append("text")
+			   		.text(d[1])
+			   		.attr("id", "myText")
+			   		.attr("x", xScale(d[2]))
+			   		.attr("y", yScale(d[3]))
+			   		.attr("font-family", "sans-serif")
+			   		.attr("font-size", "25px")
+			   		.attr("fill", "black");
+			   		d3.select(this)
+			    })
+			    .on("mouseout", function(){
+			    	d3.select("#myText").remove()
+			    });
+			    svg.append("text")
+			    .attr('id', 'femaletext1')
+       			.attr("x", (w - 690))             
+       			.attr("y", 600)
+       			.attr("text-anchor", "left")  
+         		.attr('font-weight', 'bold')
+	      		.style("font-size", "26px") 
+        		.style('fill', 'orange')
+        		.attr('font-family', 'sans-serif')
+      			.text("Female Characters: 51%");
+			    svg.append("text")
+			    .attr('id', 'femaletext2')
+       			.attr("x", (w  - 690))             
+       			.attr("y", 530)
+         		.attr('font-weight', 'bold')
+     			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'darkblue')
+        		.attr('font-family', 'sans-serif')
+      			.text("Male Characters: 43%");
+      			svg.append("text")
+      			.attr('id', 'femaletext3')
+       			.attr("x", (w  - 690))             
+       			.attr("y", 565)
+       			.attr("text-anchor", "left")  
+        		.attr('font-weight', 'bold')
+	       		.style("font-size", "26px") 
+        		.style('fill', 'turquoise')
+        		.attr('font-family', 'sans-serif')
+      			.text("Tie: 5%");
+
+      		});
+
+
+      		d3.select('#male')
+      		.on('click', function(){
+      		svg.selectAll('circle').remove();
+      		d3.select("#femaletext1").remove();
+			d3.select('#femaletext2').remove();
+			d3.select('#femaletext3').remove();
+      		d3.select("#alltext1").remove();
+			d3.select('#alltext2').remove();
+			d3.select('#alltext3').remove();
+			m_dataset = male_authors;
+      			svg.selectAll('circle')
+      			.data(m_dataset)
+      			.enter()
+			    .append("circle")
+ 			    .attr("cx", function(d) {
+			   		return xScale(d[2]);
+			    })
+			    .attr("cy", function(d) {
+			   		return yScale(d[3]);
+			    })
+			    .attr("r", 5)
+			    .attr("fill", function(d){ 
+			    	if(d[2] > d[3]){
+			    		return "orange";
+			    	} else if (d[2] == d[3]){
+			    		return "turquoise";
+			    	} else {
+			    		return "navy";
+			    	} 
+			    })
+				.attr("opacity", 0.6)
+			    .on("mouseover", function(d){
+			   		svg.append("text")
+			   		.text(d[1])
+			   		.attr("id", "myText")
+			   		.attr("x", xScale(d[2]))
+			   		.attr("y", yScale(d[3]))
+			   		.attr("font-family", "sans-serif")
+			   		.attr("font-size", "25px")
+			   		.attr("fill", "black");
+			   		d3.select(this)
+
+			    })
+			    .on("mouseout", function(){
+			    	d3.select("#myText").remove()
+			    });
+			    svg.append("text")
+			    .attr('id', 'maletext1')
+       			.attr("x", (w - 690))             
+       			.attr("y", 600)
+       			.attr("text-anchor", "left")  
+        		.attr('font-weight', 'bold')
+	       		.style("font-size", "26px") 
+        		.style('fill', 'orange')
+        		.attr('font-family', 'sans-serif')
+      			.text("Female Characters: 30%");
+			    svg.append("text")
+			    .attr('id', 'maletext2')
+       			.attr("x", (w  - 690))             
+       			.attr("y", 530)
+         		.attr('font-weight', 'bold')
+     			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'darkblue')
+        		.attr('font-family', 'sans-serif')
+      			.text("Male Characters: 66%");
+      			svg.append("text")
+      			.attr('id', 'maletext3')
+        		.attr('font-weight', 'bold')
+      			.attr("x", (w  - 690))             
+       			.attr("y", 565)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'turquoise')
+        		.attr('font-family', 'sans-serif')
+      			.text("Tie: 4%");
+      		});
+     		d3.select('#all')
+      		.on('click', function(){
+      			d3.select("#femaletext1").remove();
+			    d3.select('#femaletext2').remove();
+			    d3.select('#femaletext3').remove();
+	      		d3.select("#maletext1").remove();
+				d3.select('#maletext2').remove();
+				d3.select('#maletext3').remove();
+      			svg.selectAll('circle').remove();
+				a_dataset = bookData;
+      			svg.selectAll('circle')
+      			.data(a_dataset)
+      			.enter()
+			    .append("circle")
+ 			    .attr("cx", function(d) {
+			   		return xScale(d[2]);
+			    })
+			    .attr("cy", function(d) {
+			   		return yScale(d[3]);
+			    })
+			    .attr("r", 5)
+			    .attr("fill", function(d){ 
+			    	if(d[2] > d[3]){
+			    		return "orange";
+			    	} else if (d[2] == d[3]){
+			    		return "turquoise";
+			    	} else {
+			    		return "navy";
+			    	} 
+				})
+				.attr("opacity", 0.6)
+			    .on("mouseover", function(d){
+			   		svg.append("text")
+			   		.text(d[1])
+			   		.attr("id", "myText")
+			   		.attr("x", xScale(d[2]))
+			   		.attr("y", yScale(d[3]))
+			   		.attr("font-family", "sans-serif")
+			   		.attr("font-size", "25px")
+			   		.attr("fill", "black");
+			   		d3.select(this)
+			   		svg.append("text")
+
+			    })
+
+			    .on("mouseout", function(){
+			    	d3.select("#myText").remove();
+			    });
+			    svg.append("text")
+			    .attr('id', 'alltext1')
+       			.attr("x", (w - 690))             
+       			.attr("y", 600)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'orange')
+         		.attr('font-weight', 'bold')
+	      		.attr('font-family', 'sans-serif')
+      			.text("Female Characters: 38%");
+			    svg.append("text")
+			    .attr('id', 'alltext2')
+       			.attr("x", (w  - 690))             
+        		.attr('font-weight', 'bold')
+      			.attr("y", 530)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'darkblue')
+        		.attr('font-family', 'sans-serif')
+      			.text("Male Characters: 57%");
+      			svg.append("text")
+      			.attr('id', 'alltext3')
+         		.attr('font-weight', 'bold')
+     			.attr("x", (w  - 690))             
+       			.attr("y", 565)
+       			.attr("text-anchor", "left")  
+        		.style("font-size", "26px") 
+        		.style('fill', 'turquoise')
+        		.attr('font-family', 'sans-serif')
+      			.text("Tie: 5%");
+      		});			
+
+
+		</script>
+	</body>
+</html>
